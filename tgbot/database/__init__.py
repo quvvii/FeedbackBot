@@ -1,8 +1,5 @@
 from tortoise import Tortoise
-from config import Config
-
-
-config = Config()
+import config
 
 
 async def connect_database():

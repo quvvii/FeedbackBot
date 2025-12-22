@@ -4,7 +4,7 @@ from aiogram.utils.markdown import html_decoration as hd
 from datetime import datetime
 import time
 
-from tgbot.services.database.user_service import UserService
+from tgbot.database.repositories import UserRepository
 
 
 router = Router()
@@ -13,7 +13,7 @@ router = Router()
 async def handle_start_admin_cmd(
         msg: types.Message,
         uptime: datetime,
-        us: UserService
+        us: UserRepository
 ):
     diff = hd.code(str(datetime.now() - uptime).split(".")[0])
 

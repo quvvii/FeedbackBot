@@ -15,7 +15,7 @@ async def handle_start_user_cmd(msg: types.Message):
     )
 
     await msg.answer(
-        f"Привет, {hd.bold(msg.from_user.full_name)}!\n"
-        f"Отправь свое сообщение и жди ответа.",
+        f"Hello there, {hd.bold(msg.from_user.full_name)}!\n"
+        f"What do you want?",
         link_preview_options=link_preview
     )

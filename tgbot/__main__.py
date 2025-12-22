@@ -6,7 +6,7 @@ from aiogram import Bot, Dispatcher
 from aiogram.fsm.storage.memory import MemoryStorage
 from aiogram.client.default import DefaultBotProperties
 
-from config import Config
+import config
 
 from tgbot.logger import setup_logger
 from tgbot.database import connect_database, close_connection
@@ -19,7 +19,7 @@ class BotManager:
         self.bot: Bot | None = None
         self.dp: Dispatcher | None = None
 
-        self.config = Config()
+        self.config = config
         self.logger = logging.getLogger(self.__class__.__name__)
 
     async def setup(self):

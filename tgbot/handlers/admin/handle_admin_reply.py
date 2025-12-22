@@ -1,6 +1,6 @@
 from aiogram import Router, Bot, types, F, exceptions
 
-from tgbot.services.database.message_relations import MessageRelationsService
+from tgbot.database.repositories import MessageRelationsRepository
 
 import logging
 
@@ -12,14 +12,14 @@ router = Router()
 async def handle_admin_reply(
     msg: types.Message,
     bot: Bot,
-    mr: MessageRelationsService
+    mr: MessageRelationsRepository
 ):
     relation = await mr.get_relation(
         message_id=msg.reply_to_message.message_id
     )
 
     if not relation:
-        return await msg.reply("❌ Не удалось найти получателя")
+        return await msg.reply("❌ Couldn't find the receiver.")
 
     try:
         if msg.video_note:
@@ -38,11 +38,9 @@ async def handle_admin_reply(
         else:
             await msg.send_copy(relation.user_id)
 
-        await msg.reply("✅ Ответ отправлен пользователю")
-
     except exceptions.TelegramForbiddenError:
-        await msg.reply("❌ Пользователь заблокировал бота")
+        await msg.reply("❌ User has banned the bot.")
 
     except Exception as e:
         logger.error(f"Reply error: {e}")
-        await msg.reply(f"❌ Ошибка: {e}")
+        await msg.reply(f"❌ Error: {e}")

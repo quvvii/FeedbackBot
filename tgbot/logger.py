@@ -1,11 +1,8 @@
-from config import Config
-
+import config
 import logging
 
 
 def setup_logger():
-    config = Config()
-
     formatter = logging.Formatter(
         fmt=config.LOGGER_FORMAT,
         datefmt=config.DATE_FORMAT

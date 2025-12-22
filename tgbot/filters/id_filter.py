@@ -1,7 +1,7 @@
 from aiogram.filters import BaseFilter
 from aiogram.types import Message
 
-from config import config
+import config
 
 
 class IDFilter(BaseFilter):

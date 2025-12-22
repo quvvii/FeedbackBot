@@ -2,9 +2,8 @@ from aiogram import BaseMiddleware
 from typing import Any, Awaitable, Callable, Dict
 from aiogram.types import TelegramObject, User as TelegramUser
 
-from tgbot.services.database.message_relations import MessageRelationsService
-from tgbot.services.database.user_service import UserService
-from tgbot.database.uow import UnitOfWork
+from tgbot.database.repositories import UserRepository
+from tgbot.database.repositories import MessageRelationsRepository
 
 
 class UserMiddleware(BaseMiddleware):
@@ -16,12 +15,11 @@ class UserMiddleware(BaseMiddleware):
     ) -> Any:
         user: TelegramUser | None = getattr(event, "from_user", None)
 
-        uow = UnitOfWork()
-        us = UserService(uow)
-        mr = MessageRelationsService(uow)
+        us = UserRepository()
+        mr = MessageRelationsRepository()
 
         if user and user.id:
-            db_user = await us.get_user(user.id, user.full_name)
+            db_user = await us.create_user(user.id, user.full_name)
 
             if db_user.is_banned:
                 return
