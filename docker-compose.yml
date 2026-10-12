@@ -1,0 +1,9 @@
+services:
+  bot:
+    build: .
+    container_name: feedback-bot-aiogram
+    restart: unless-stopped
+    env_file: .env
+    volumes:
+      - ./data:/app/data
+      - ./logs:/app/logs
