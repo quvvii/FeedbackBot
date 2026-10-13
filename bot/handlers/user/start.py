@@ -15,7 +15,7 @@ async def start_user_cmd(msg: Message) -> None:
     )
 
     await msg.answer(
-        f"Hello there, {hd.bold(msg.from_user.full_name)}!\n\n"
+        f"Hello there, {hd.bold(msg.from_user.full_name)}!\n"
         f"What do you want?",
         link_preview_options=link_preview,
     )

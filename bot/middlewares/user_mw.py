@@ -19,13 +19,13 @@ class UserMiddleware(BaseMiddleware):
 
         repo: Repo = data["repo"]
 
-        await repo.users.upsert_user(
+        await repo.users.get_or_create(
             user_id=tg_user.id,
-            name=tg_user.full_name,
+            full_name=tg_user.full_name,
             username=tg_user.username,
         )
 
-        db_user: aiosqlite.Row | None = await repo.users.get_user(tg_user.id)
+        db_user: aiosqlite.Row | None = await repo.users.get_by_user_id(tg_user.id)
 
         if db_user and db_user["is_banned"]:
             return

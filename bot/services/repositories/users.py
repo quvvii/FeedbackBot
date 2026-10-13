@@ -3,53 +3,76 @@ import aiosqlite
 
 class UsersRepository:
     def __init__(self, db: aiosqlite.Connection) -> None:
-        self._db = db
+        self.db = db
 
-    async def upsert_user(
-        self,
-        user_id: int,
-        name: str,
-        username: str | None = None,
-    ) -> None:
-        await self._db.execute(
-            """
-            INSERT INTO users (user_id, name, username)
-            VALUES (?, ?, ?)
-            ON CONFLICT(user_id) DO UPDATE SET
-                name = excluded.name,
-                username = excluded.username,
-                updated_at = datetime('now')
-            """,
-            (user_id, name, username),
+    async def get_or_create(
+        self, user_id: int, full_name: str, username: str | None
+    ) -> aiosqlite.Row:
+        cursor = await self.db.execute(
+            "SELECT * FROM users WHERE user_id = ?",
+            (user_id,),
         )
-        await self._db.commit()
+        row = await cursor.fetchone()
+        if row:
+            return row
 
-    async def get_user(self, user_id: int) -> aiosqlite.Row | None:
-        cursor = await self._db.execute(
+        await self.db.execute(
+            """
+            INSERT INTO users (user_id, full_name, username)
+            VALUES (?, ?, ?)
+            """,
+            (user_id, full_name, username),
+        )
+        await self.db.commit()
+
+        cursor = await self.db.execute(
             "SELECT * FROM users WHERE user_id = ?",
             (user_id,),
         )
         return await cursor.fetchone()
 
-    async def set_ban_status(self, user_id: int, is_banned: bool) -> None:
-        await self._db.execute(
-            """
-            UPDATE users
-            SET is_banned = ?,
-                updated_at = datetime('now')
-            WHERE user_id = ?
-            """,
-            (int(is_banned), user_id),
+    async def set_topic_id(self, user_id: int, topic_id: int) -> None:
+        await self.db.execute(
+            "UPDATE users SET topic_id = ? WHERE user_id = ?",
+            (topic_id, user_id),
         )
-        await self._db.commit()
+        await self.db.commit()
+
+    async def get_by_topic_id(self, topic_id: int) -> aiosqlite.Row | None:
+        cursor = await self.db.execute(
+            "SELECT * FROM users WHERE topic_id = ?",
+            (topic_id,),
+        )
+        return await cursor.fetchone()
+
+    async def set_banned(self, user_id: int, is_banned: bool) -> None:
+        await self.db.execute(
+            "UPDATE users SET is_banned = ? WHERE user_id = ?",
+            (1 if is_banned else 0, user_id),
+        )
+        await self.db.commit()
+
+    async def get_by_user_id(self, user_id: int) -> aiosqlite.Row | None:
+        cursor = await self.db.execute(
+            "SELECT * FROM users WHERE user_id = ?",
+            (user_id,),
+        )
+        return await cursor.fetchone()
+
+    async def clear_topic_id(self, topic_id: int) -> None:
+        await self.db.execute(
+            "UPDATE users SET topic_id = NULL WHERE topic_id = ?",
+            (topic_id,),
+        )
+        await self.db.commit()
 
     async def total(self) -> int:
-        cursor = await self._db.execute("SELECT COUNT(*) FROM users")
+        cursor = await self.db.execute("SELECT COUNT(*) FROM users")
         row = await cursor.fetchone()
         return row[0] if row else 0
 
     async def total_banned(self) -> int:
-        cursor = await self._db.execute(
+        cursor = await self.db.execute(
             "SELECT COUNT(*) FROM users WHERE is_banned = 1"
         )
         row = await cursor.fetchone()

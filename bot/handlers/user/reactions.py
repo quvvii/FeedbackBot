@@ -1,6 +1,6 @@
 import logging
-from aiogram import Bot, Router, exceptions
-from aiogram.types import MessageReactionUpdated, ReactionTypeEmoji
+from aiogram import Bot, Router, types
+from aiogram.exceptions import TelegramAPIError
 
 from bot.config import settings
 from bot.services.repo import Repo
@@ -11,43 +11,46 @@ router = Router(name="handle_reactions")
 
 
 @router.message_reaction()
-async def handle_reactions(
-    event: MessageReactionUpdated,
+async def handle_reaction(
+    event: types.MessageReactionUpdated,
     bot: Bot,
     repo: Repo,
 ) -> None:
-    _reactions = [
+    safe_reactions = [
         r for r in event.new_reaction
-        if isinstance(r, ReactionTypeEmoji)
+        if isinstance(r, types.ReactionTypeEmoji)
     ][:1]
 
-    try:
-        if event.user.id == settings.owner_id:
-            target = await repo.message_relations.get_user_target(event.message_id)
-            if not target:
-                return
+    if event.chat.id == settings.owner_id:
+        if not event.user or event.user.id != settings.owner_id:
+            return
 
+        relation = await repo.message_relations.get_by_topic_message(event.message_id)
+        if not relation:
+            return
+
+        try:
             await bot.set_message_reaction(
-                chat_id=target["user_id"],
-                message_id=target["user_message_id"],
-                reaction=_reactions,
+                chat_id=relation["user_id"],
+                message_id=relation["user_message_id"],
+                reaction=safe_reactions,
             )
+        except TelegramAPIError as e:
+            logger.warning("Failed to sync reaction to user: %s", e)
 
-        else:
-            admin_msg_id = await repo.message_relations.get_admin_target(
-                user_id=event.user.id,
-                user_message_id=event.message_id,
-            )
-            if not admin_msg_id:
-                return
+    else:
+        topic_msg_id = await repo.message_relations.get_by_user_message(
+            user_id=event.chat.id,
+            user_message_id=event.message_id,
+        )
+        if not topic_msg_id:
+            return
 
+        try:
             await bot.set_message_reaction(
                 chat_id=settings.owner_id,
-                message_id=admin_msg_id,
-                reaction=_reactions,
+                message_id=topic_msg_id,
+                reaction=safe_reactions,
             )
-
-    except exceptions.TelegramBadRequest as e:
-        logger.warning("Failed to sync reaction: %s", e)
-    except exceptions.TelegramAPIError as e:
-        logger.error("API error while syncing reaction: %s", e)
+        except TelegramAPIError as e:
+            logger.warning("Failed to sync reaction to topic: %s", e)

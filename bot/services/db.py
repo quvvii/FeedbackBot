@@ -3,29 +3,26 @@ import aiosqlite
 
 SCHEMA = """
 PRAGMA journal_mode = WAL;
-PRAGMA foreign_keys = ON;
 
 CREATE TABLE IF NOT EXISTS users (
-    user_id     INTEGER PRIMARY KEY,
-    name        TEXT NOT NULL,
+    id          INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id     INTEGER UNIQUE NOT NULL,
+    full_name   TEXT NOT NULL,
     username    TEXT,
-    is_banned   INTEGER NOT NULL DEFAULT 0,
-    created_at  TEXT DEFAULT (datetime('now')),
-    updated_at  TEXT DEFAULT (datetime('now'))
+    topic_id    INTEGER UNIQUE,
+    is_banned   INTEGER DEFAULT 0,
+    created_at  TEXT DEFAULT (datetime('now'))
 );
 
-CREATE TABLE IF NOT EXISTS user_to_admin_messages (
-    admin_message_id INTEGER PRIMARY KEY,
+CREATE TABLE IF NOT EXISTS topic_message_relations (
     user_id          INTEGER NOT NULL,
-    user_message_id  INTEGER NOT NULL
-);
-
-CREATE TABLE IF NOT EXISTS admin_to_user_messages (
     user_message_id  INTEGER NOT NULL,
-    user_id          INTEGER NOT NULL,
-    admin_message_id INTEGER NOT NULL,
+    topic_message_id INTEGER NOT NULL,
     PRIMARY KEY (user_id, user_message_id)
 );
+
+CREATE INDEX IF NOT EXISTS idx_topic_messages 
+ON topic_message_relations(topic_message_id);
 """
 
 async def init_db(db_path: str) -> aiosqlite.Connection:

@@ -64,6 +64,7 @@ async def main() -> None:
             allowed_updates=[
                 "message",
                 "message_reaction",
+                "callback_query",
             ],
         )
 
