@@ -1,3 +1,5 @@
+from pathlib import Path
+
 import aiosqlite
 
 
@@ -26,8 +28,12 @@ ON topic_message_relations(topic_message_id);
 """
 
 async def init_db(db_path: str) -> aiosqlite.Connection:
+    Path(db_path).parent.mkdir(parents=True, exist_ok=True)
+
     conn = await aiosqlite.connect(db_path)
     conn.row_factory = aiosqlite.Row
+    await conn.execute("PRAGMA foreign_keys = ON")
+    await conn.execute("PRAGMA busy_timeout = 5000")
     await conn.executescript(SCHEMA)
     await conn.commit()
     return conn

@@ -20,6 +20,8 @@ async def handle_reaction(
         r for r in event.new_reaction
         if isinstance(r, types.ReactionTypeEmoji)
     ][:1]
+    if not safe_reactions:
+        return
 
     if event.chat.id == settings.owner_id:
         if not event.user or event.user.id != settings.owner_id:
@@ -39,8 +41,12 @@ async def handle_reaction(
             logger.warning("Failed to sync reaction to user: %s", e)
 
     else:
+        user = await repo.users.get_by_user_id(event.chat.id)
+        if not user:
+            return
+
         topic_msg_id = await repo.message_relations.get_by_user_message(
-            user_id=event.chat.id,
+            user_id=user["user_id"],
             user_message_id=event.message_id,
         )
         if not topic_msg_id:

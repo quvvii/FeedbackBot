@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 router = Router(name="handle_admin_reply")
 
 
-@router.message(F.message_thread_id)
+@router.message(F.message_thread_id, ~F.text.func(lambda t: t and t.startswith("/")))
 async def handle_admin_reply(
     msg: types.Message,
     repo: Repo,
@@ -62,7 +62,11 @@ async def handle_ban_callback(
     callback: types.CallbackQuery,
     repo: Repo,
 ) -> None:
-    _, user_id_str, action = callback.data.split(":")
+    if not callback.data or not callback.message:
+        await callback.answer()
+        return
+
+    _, user_id_str, action = callback.data.split(":", 2)
     user_id = int(user_id_str)
     new_action = action == "ban"
 

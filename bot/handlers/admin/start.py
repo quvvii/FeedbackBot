@@ -1,4 +1,5 @@
 import time
+
 from aiogram import Router
 from aiogram.filters import CommandStart
 from aiogram.types import Message
@@ -16,9 +17,9 @@ async def start_admin_cmd(
     repo: Repo,
     uptime: BotUptime,
 ) -> None:
-    t0 = time.perf_counter()
+    t0 = time.monotonic()
     await msg.bot.get_me()
-    t1 = time.perf_counter()
+    t1 = time.monotonic()
     ping_ms = round((t1 - t0) * 1000)
 
     total_users = await repo.users.total()

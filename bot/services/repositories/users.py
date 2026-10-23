@@ -18,7 +18,7 @@ class UsersRepository:
 
         await self.db.execute(
             """
-            INSERT INTO users (user_id, full_name, username)
+            INSERT OR IGNORE INTO users (user_id, full_name, username)
             VALUES (?, ?, ?)
             """,
             (user_id, full_name, username),

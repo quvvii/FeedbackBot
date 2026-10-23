@@ -23,8 +23,6 @@ async def cmd_delete_topic(
 
     topic_id = msg.message_thread_id
 
-    await repo.users.clear_topic_id(topic_id)
-
     try:
         await bot.delete_forum_topic(
             chat_id=settings.owner_id,
@@ -33,3 +31,6 @@ async def cmd_delete_topic(
     except TelegramAPIError as e:
         logger.error("Failed to delete forum topic %s: %s", topic_id, e)
         await msg.reply(f"❌ Failed to delete topic: {e.message}")
+        return
+
+    await repo.users.clear_topic_id(topic_id)

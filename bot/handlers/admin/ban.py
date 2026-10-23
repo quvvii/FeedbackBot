@@ -1,3 +1,5 @@
+from html import escape
+
 from aiogram import Router, types
 from aiogram.filters import Command
 
@@ -19,7 +21,7 @@ async def ban_command(msg: types.Message, repo: Repo) -> None:
         return
 
     await repo.users.set_banned(user["user_id"], is_banned=True)
-    await msg.reply(f"🚫 User <b>{user['full_name']}</b> (<code>{user['user_id']}</code>) banned.")
+    await msg.reply(f"🚫 User <b>{escape(user['full_name'])}</b> (<code>{user['user_id']}</code>) banned.")
 
 
 @router.message(Command("unban"), lambda m: m.chat.id == settings.owner_id)
@@ -33,4 +35,4 @@ async def unban_command(msg: types.Message, repo: Repo) -> None:
         return
 
     await repo.users.set_banned(user["user_id"], is_banned=False)
-    await msg.reply(f"✅ User <b>{user['full_name']}</b> (<code>{user['user_id']}</code>) unbanned.")
+    await msg.reply(f"✅ User <b>{escape(user['full_name'])}</b> (<code>{user['user_id']}</code>) unbanned.")

@@ -12,7 +12,6 @@ from bot.logger import setup_logging
 from bot.handlers import get_handlers_router
 
 from bot.middlewares.logging_mw import LoggingMiddleware
-from bot.middlewares.throttling_mw import ThrottlingMiddleware
 from bot.middlewares.db_session_mw import RepoMiddleware
 from bot.middlewares.user_mw import UserMiddleware
 
@@ -41,7 +40,6 @@ async def main() -> None:
 
     dp.update.outer_middleware(RepoMiddleware(repo))
     dp.update.outer_middleware(LoggingMiddleware())
-    dp.message.middleware(ThrottlingMiddleware(rate_limit=0.7))
     dp.message.middleware(UserMiddleware())
 
     dp.include_router(get_handlers_router())
